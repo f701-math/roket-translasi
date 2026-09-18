@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Petualangan Roket Translasi</title>
+    <title>Petualangan Roket Translasi by Fauzul Azmi</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -545,36 +545,69 @@
                     state.isMoving = false;
 
                     updateHUD();
-                    checkGameRules(startX, startY, midX, targetY);
+                    checkGameRules(startX, startY, vector);
                 }
             }
 
             requestAnimationFrame(animateStep);
         }
 
-        function checkGameRules(startX, startY, midX, targetY) {
-            const midOutOfBounds = midX < 0 || midX > state.gridSize.x || startY < 0 || startY > state.gridSize.y;
-            const targetOutOfBounds = state.rocketPos.x < 0 || state.rocketPos.x > state.gridSize.x ||
-                state.rocketPos.y < 0 || state.rocketPos.y > state.gridSize.y;
+        // Helper untuk menghitung seluruh titik koordinat sepanjang lintasan translasi
+        function getTrajectoryPoints(startX, startY, dx, dy) {
+            const points = [];
+            
+            // Segmen pergerakan horizontal (komponen X)
+            const stepX = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
+            if (stepX !== 0) {
+                for (let x = startX + stepX; dx > 0 ? x <= startX + dx : x >= startX + dx; x += stepX) {
+                    points.push({ x: x, y: startY });
+                }
+            }
+            
+            // Segmen pergerakan vertikal (komponen Y)
+            const midX = startX + dx;
+            const stepY = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
+            if (stepY !== 0) {
+                for (let y = startY + stepY; dy > 0 ? y <= startY + dy : y >= startY + dy; y += stepY) {
+                    points.push({ x: midX, y: y });
+                }
+            }
+            
+            return points;
+        }
 
-            if (midOutOfBounds || targetOutOfBounds) {
+        function checkGameRules(startX, startY, vector) {
+            const trajectory = getTrajectoryPoints(startX, startY, vector.x, vector.y);
+
+            // 1. Cek apakah ada titik lintasan yang meledak keluar batas
+            const outOfBoundsPt = trajectory.find(pt => 
+                pt.x < 0 || pt.x > state.gridSize.x || pt.y < 0 || pt.y > state.gridSize.y
+            );
+
+            if (outOfBoundsPt) {
                 audio.playCrash();
-                createExplosion(state.rocketPos.x, state.rocketPos.y);
+                const crashX = Math.max(0, Math.min(state.gridSize.x, outOfBoundsPt.x));
+                const crashY = Math.max(0, Math.min(state.gridSize.y, outOfBoundsPt.y));
+                state.rocketPos = { x: crashX, y: crashY };
+                createExplosion(crashX, crashY);
                 showResultModal(false, "Misi Gagal! Roket melewati batas koordinat ruang angkasa.");
                 return;
             }
 
-            const hitMidAsteroid = state.asteroids.some(a => a.x === midX && a.y === startY);
-            const hitTargetAsteroid = state.asteroids.some(a => a.x === state.rocketPos.x && a.y === state.rocketPos.y);
+            // 2. Cek apakah ada titik lintasan yang menabrak asteroid
+            const hitAsteroidPt = trajectory.find(pt => 
+                state.asteroids.some(a => a.x === pt.x && a.y === pt.y)
+            );
 
-            if (hitMidAsteroid || hitTargetAsteroid) {
+            if (hitAsteroidPt) {
                 audio.playCrash();
-                createExplosion(state.rocketPos.x, state.rocketPos.y);
-                showResultModal(false, "Misi Gagal! Roket menabrak sabuk asteroid.");
+                state.rocketPos = { x: hitAsteroidPt.x, y: hitAsteroidPt.y };
+                createExplosion(hitAsteroidPt.x, hitAsteroidPt.y);
+                showResultModal(false, "Misi Gagal! Lintasannya menabrak sabuk asteroid.");
                 return;
             }
 
-            // Target reached
+            // 3. Pendaratan berhasil jika titik akhir pas di posisi Bulan
             if (state.rocketPos.x === state.moonPos.x && state.rocketPos.y === state.moonPos.y) {
                 audio.playWin();
                 createConfetti(state.moonPos.x, state.moonPos.y);
@@ -582,7 +615,7 @@
                 return;
             }
 
-            // Out of moves
+            // 4. Cek kehabisan langkah
             if (state.moves >= state.maxMoves) {
                 audio.playCrash();
                 showResultModal(false, "Misi Gagal! Roket kehabisan bahan bakar.");
