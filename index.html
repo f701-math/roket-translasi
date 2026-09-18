@@ -1,824 +1,560 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Petualangan Roket Translasi by Fauzul</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    
-    <style>
-        * {
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-        }
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: #0b0d1b;
-            color: #f1f5f9;
-            overflow: hidden;
-        }
-        .font-space {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        .glow-text {
-            text-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
-        }
-        .glow-card {
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        /* Custom Button Press Effects */
-        .btn-option {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-option:active {
-            transform: scale(0.95);
-        }
-        /* Stars twinkle animation */
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.9; }
-        }
-        .star-bg {
-            animation: twinkle 4s infinite ease-in-out;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Petualangan Roket Translasi by Fauzul</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden; /* Mencegah scroll pada layar HP */
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px;
+      background: #1e293b;
+    }
+
+    /* Header & Stats */
+    .header {
+      background: #334155;
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      border: 1px solid #475569;
+    }
+
+    .title-group h1 {
+      font-size: 1.1rem;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step-badge {
+      font-size: 0.85rem;
+      background: #0f172a;
+      padding: 4px 10px;
+      border-radius: 20px;
+      color: #fbbf24;
+      font-weight: bold;
+      border: 1px solid #64748b;
+    }
+
+    /* Coords Display */
+    .coords-bar {
+      display: flex;
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    .coord-box {
+      flex: 1;
+      background: #334155;
+      padding: 6px 10px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid #475569;
+    }
+
+    .coord-box.rocket { color: #38bdf8; }
+    .coord-box.moon { color: #facc15; }
+
+    /* Canvas Area */
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      background: #090d16;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #3b82f6;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 0; /* Penting untuk flex layout di HP */
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Controls Section */
+    .controls-panel {
+      background: #334155;
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 8px;
+      border: 1px solid #475569;
+    }
+
+    .panel-title {
+      text-align: center;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .btn-option {
+      background: linear-gradient(180deg, #2563eb, #1d4ed8);
+      border: 2px solid #60a5fa;
+      color: white;
+      padding: 10px 4px;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+
+    .btn-option:active {
+      transform: scale(0.95);
+      background: #1e40af;
+    }
+
+    .btn-option .sub-label {
+      font-size: 0.65rem;
+      color: #bfdbfe;
+      font-weight: normal;
+    }
+
+    .btn-option:disabled {
+      background: #475569;
+      border-color: #64748b;
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Modal Overlay */
+    .modal {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 10;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border: 2px solid #38bdf8;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      max-width: 320px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .modal h2 { font-size: 1.4rem; margin-bottom: 8px; }
+    .modal p { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 16px; line-height: 1.4; }
+    .modal-btn {
+      background: #22c55e;
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body class="h-screen w-screen flex flex-col justify-between p-2 md:p-4 max-w-md mx-auto relative overflow-hidden bg-slate-950">
+<body>
 
-    <!-- Top HUD Bar -->
-    <header class="w-full bg-slate-900/80 rounded-2xl p-3 glow-card flex justify-between items-center z-10 border border-slate-800">
-        <div>
-            <span class="text-xs text-sky-400 font-semibold tracking-wider uppercase block">Level <span id="level-display">1</span></span>
-            <h1 class="text-sm md:text-base font-bold text-white font-space flex items-center gap-1.5">
-                <i class="fa-solid font-bold text-amber-400 fa-rocket"></i> Menuju Bulan
-            </h1>
-        </div>
-        <div class="flex items-center gap-3">
-            <!-- Step/Fuel Indicator -->
-            <div class="text-right">
-                <span class="text-[10px] text-slate-400 block uppercase font-bold">Langkah</span>
-                <span id="moves-count" class="text-sm font-bold text-emerald-400 font-space">0 / 12</span>
-            </div>
-            <!-- Restart Button -->
-            <button id="btn-restart" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 active:scale-90 transition">
-                <i class="fa-solid fa-rotate-right text-xs"></i>
-            </button>
-            <!-- Help Button -->
-            <button id="btn-help" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-sky-400 active:scale-90 transition">
-                <i class="fa-solid fa-circle-question text-xs"></i>
-            </button>
-        </div>
-    </header>
-
-    <!-- Position Status Bar -->
-    <div class="w-full flex justify-between items-center px-2 my-1 z-10 text-xs font-space">
-        <div class="bg-indigo-950/70 border border-indigo-800/50 px-3 py-1 rounded-full text-indigo-200">
-            <i class="fa-solid fa-location-crosshairs text-sky-400 mr-1"></i> Roket: <span id="pos-rocket" class="font-bold text-white">(0, 0)</span>
-        </div>
-        <div class="bg-amber-950/70 border border-amber-800/50 px-3 py-1 rounded-full text-amber-200">
-            <i class="fa-solid fa-moon text-amber-300 mr-1"></i> Bulan: <span id="pos-moon" class="font-bold text-white">(8, 12)</span>
-        </div>
+<div class="app-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="title-group">
+      <h1>🚀 LEVEL <span id="lvl-display">1</span></h1>
     </div>
-
-    <!-- Canvas Game Container -->
-    <main class="relative flex-1 w-full my-1 rounded-2xl overflow-hidden glow-card border border-slate-800 bg-slate-900/90 flex items-center justify-center">
-        <canvas id="gameCanvas" class="w-full h-full block rounded-2xl"></canvas>
-        
-        <!-- Toast / Message Overlay inside canvas -->
-        <div id="game-toast" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/90 border border-sky-500/40 text-sky-200 px-4 py-1.5 rounded-full text-xs font-medium shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none z-20 flex items-center gap-2">
-            <i class="fa-solid fa-circle-info text-sky-400"></i>
-            <span id="toast-text">Pilih notasi translasi untuk bergerak</span>
-        </div>
-    </main>
-
-    <!-- Control Panel / Translation Choice Buttons -->
-    <footer class="w-full bg-slate-900/90 rounded-2xl p-3 glow-card z-10 border border-slate-800">
-        <div class="text-center mb-2">
-            <span class="text-[11px] font-medium text-slate-400 uppercase tracking-widest font-space">
-                PILIH TRANSLASI <span class="text-sky-400 font-bold">[x, y]</span>
-            </span>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2" id="options-container">
-            <!-- Option Buttons will be rendered dynamically via JavaScript -->
-        </div>
-    </footer>
-
-    <!-- Tutorial & Info Modal -->
-    <div id="modal-guide" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-xs w-full shadow-2xl">
-            <h2 class="text-lg font-bold text-sky-400 mb-2 font-space flex items-center gap-2">
-                <i class="fa-solid fa-compass-drafting"></i> Cara Bermain
-            </h2>
-            <div class="text-xs text-slate-300 space-y-2.5 leading-relaxed">
-                <p>Kendalikan roket melintasi koordinat ruang angkasa untuk mendarat tepat di Bulan!</p>
-                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <p class="font-bold text-amber-300 mb-1">Notasi Translasi [x, y]:</p>
-                    <ul class="list-disc list-inside space-y-1 text-[11px]">
-                        <li><strong class="text-sky-400">x &gt; 0</strong>: Geser KANAN</li>
-                        <li><strong class="text-sky-400">x &lt; 0</strong>: Geser KIRI</li>
-                        <li><strong class="text-emerald-400">y &gt; 0</strong>: Geser ATAS</li>
-                        <li><strong class="text-emerald-400">y &lt; 0</strong>: Geser BAWAH</li>
-                        <li><strong class="text-slate-400">0</strong>: Diam di sumbu tersebut</li>
-                    </ul>
-                </div>
-                <p class="text-slate-400 text-[11px]">Setiap pergerakan roket akan memperbarui 3 opsi pilihan translasi baru secara acak.</p>
-            </div>
-            <button id="btn-close-guide" class="w-full mt-4 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs font-space transition">
-                Mengerti, Mulai!
-            </button>
-        </div>
+    <div class="step-badge">
+      LANGKAH: <span id="step-display">0</span>/<span id="max-step-display">10</span>
     </div>
+  </div>
 
-    <!-- Win / Game Over Modal -->
-    <div id="modal-result" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-xs w-full text-center shadow-2xl">
-            <div id="result-icon-box" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3">
-                <!-- Icon inserted via JS -->
-            </div>
-            <h2 id="result-title" class="text-xl font-bold font-space mb-1">Misi Berhasil!</h2>
-            <p id="result-desc" class="text-xs text-slate-300 mb-4">Roket berhasil mendarat di Bulan dengan selamat.</p>
-            
-            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs mb-4 space-y-1.5">
-                <div class="flex justify-between text-slate-400">
-                    <span>Langkah Digunakan:</span>
-                    <span id="res-moves" class="font-bold text-white">0</span>
-                </div>
-                <div class="flex justify-between text-slate-400">
-                    <span>Target Level:</span>
-                    <span id="res-level" class="font-bold text-sky-400">Level 1</span>
-                </div>
-            </div>
+  <!-- Coordinates -->
+  <div class="coords-bar">
+    <div class="coord-box rocket">🚀 Roket: <span id="rocket-coord">(0,0)</span></div>
+    <div class="coord-box moon">🌕 Bulan: <span id="moon-coord">(0,0)</span></div>
+  </div>
 
-            <button id="btn-next-level" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs font-space transition shadow-lg">
-                Lanjut Level Berikutnya
-            </button>
-        </div>
+  <!-- Game Canvas -->
+  <div class="canvas-container" id="canvas-wrapper">
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- Modal Result -->
+    <div class="modal" id="gameModal">
+      <div class="modal-content">
+        <h2 id="modal-title">MENANG!</h2>
+        <p id="modal-msg">Roket berhasil mendarat di Bulan!</p>
+        <button class="modal-btn" onclick="nextAction()">Lanjut</button>
+      </div>
     </div>
+  </div>
 
-    <!-- JavaScript Game Logic -->
-    <script>
-        // Simple Web Audio API Sound Generator
-        class SoundFX {
-            constructor() {
-                this.ctx = null;
-            }
-            init() {
-                if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-            }
-            playMove() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.2);
-            }
-            playWin() {
-                if (!this.ctx) return;
-                const notes = [261.63, 329.63, 392.00, 523.25];
-                notes.forEach((freq, idx) => {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.1);
-                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.1);
-                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.1 + 0.3);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start(this.ctx.currentTime + idx * 0.1);
-                    osc.stop(this.ctx.currentTime + idx * 0.1 + 0.3);
-                });
-            }
-            playCrash() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
-                osc.frequency.linearRampToValueAtTime(50, this.ctx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.3);
-            }
+  <!-- Controls Panel -->
+  <div class="controls-panel">
+    <div class="panel-title">PILIH NOTASI TRANSLASI [X, Y]</div>
+    <div class="options-grid">
+      <button class="btn-option" id="opt-0" onclick="makeMove(0)">
+        <span id="label-0">[0, 0]</span>
+        <span class="sub-label">Pilihan 1</span>
+      </button>
+      <button class="btn-option" id="opt-1" onclick="makeMove(1)">
+        <span id="label-1">[0, 0]</span>
+        <span class="sub-label">Pilihan 2</span>
+      </button>
+      <button class="btn-option" id="opt-2" onclick="makeMove(2)">
+        <span id="label-2">[0, 0]</span>
+        <span class="sub-label">Pilihan 3</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const wrapper = document.getElementById('canvas-wrapper');
+
+  // Game State Variables
+  const GRID_SIZE = 10;
+  let level = 1;
+  let stepsLeft = 10;
+  let maxSteps = 10;
+  let movesCount = 0;
+  let isAnimating = false;
+
+  let rocket = { x: 0, y: 0 };
+  let moon = { x: 0, y: 0 };
+  let currentOptions = [];
+  let currentHoverOpt = null;
+
+  // Responsiveness Adjustment
+  function resizeCanvas() {
+    const rect = wrapper.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    draw();
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function initLevel() {
+    isAnimating = false;
+    movesCount = 0;
+
+    // Grid bounds: 0 to 10
+    // Generate Random Start Positions
+    rocket.x = Math.floor(Math.random() * 4) + 1; // 1..4
+    rocket.y = Math.floor(Math.random() * 4) + 1; // 1..4
+
+    moon.x = Math.floor(Math.random() * 4) + 6; // 6..9
+    moon.y = Math.floor(Math.random() * 4) + 6; // 6..9
+
+    maxSteps = Math.max(8, 12 - Math.floor(level / 2));
+    stepsLeft = maxSteps;
+
+    updateUI();
+    generateOptions();
+    resizeCanvas();
+  }
+
+  function updateUI() {
+    document.getElementById('lvl-display').innerText = level;
+    document.getElementById('step-display').innerText = movesCount;
+    document.getElementById('max-step-display').innerText = maxSteps;
+    document.getElementById('rocket-coord').innerText = `(${rocket.x}, ${rocket.y})`;
+    document.getElementById('moon-coord').innerText = `(${moon.x}, ${moon.y})`;
+  }
+
+  function generateOptions() {
+    currentOptions = [];
+    movesCount++;
+    document.getElementById('step-display').innerText = movesCount;
+
+    // Distance to Moon
+    const dx = moon.x - rocket.x;
+    const dy = moon.y - rocket.y;
+
+    // After 5 steps (on step 6 onwards), guarantee at least 1 winning option
+    let winningIndex = -1;
+    if (movesCount >= 6) {
+      winningIndex = Math.floor(Math.random() * 3);
+    }
+
+    for (let i = 0; i < 3; i++) {
+      if (i === winningIndex) {
+        currentOptions.push([dx, dy]);
+      } else {
+        let rx = Math.floor(Math.random() * 9) - 4; // -4 to 4
+        let ry = Math.floor(Math.random() * 9) - 4; // -4 to 4
+        // Avoid duplicate winning vector prematurely
+        if (rx === dx && ry === dy && winningIndex === -1) {
+          rx += 1;
         }
+        currentOptions.push([rx, ry]);
+      }
+    }
+
+    // Render option buttons
+    for (let i = 0; i < 3; i++) {
+      const [x, y] = currentOptions[i];
+      const signX = x >= 0 ? `+${x}` : `${x}`;
+      const signY = y >= 0 ? `+${y}` : `${y}`;
+      document.getElementById(`label-${i}`).innerText = `[${signX}, ${signY}]`;
+      document.getElementById(`opt-${i}`).disabled = false;
+    }
+  }
+
+  function makeMove(index) {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    // Disable all option buttons during animation
+    for (let i = 0; i < 3; i++) {
+      document.getElementById(`opt-${i}`).disabled = true;
+    }
+
+    const [tx, ty] = currentOptions[index];
+    const targetX = rocket.x + tx;
+    const targetY = rocket.y + ty;
+
+    // Animate movement horizontally first (L-shape), then vertically
+    let startX = rocket.x;
+    let startY = rocket.y;
+    let duration = 600; // ms
+    let startTime = null;
+
+    function stepAnimation(timestamp) {
+      if (!startTime) startTime = timestamp;
+      let progress = (timestamp - startTime) / duration;
+
+      if (progress > 1) progress = 1;
+
+      // First half: Move X, Second half: Move Y
+      if (progress < 0.5) {
+        let p1 = progress * 2;
+        rocket.x = startX + tx * p1;
+        rocket.y = startY;
+      } else {
+        let p2 = (progress - 0.5) * 2;
+        rocket.x = startX + tx;
+        rocket.y = startY + ty * p2;
+      }
+
+      draw();
+
+      if (progress < 1) {
+        requestAnimationFrame(stepAnimation);
+      } else {
+        // Round position to integer
+        rocket.x = targetX;
+        rocket.y = targetY;
+        updateUI();
+
+        // Check Win/Loss conditions
+        checkGameStatus();
+      }
+    }
+
+    requestAnimationFrame(stepAnimation);
+  }
+
+  function checkGameStatus() {
+    // 1. Out of Bounds Check
+    if (rocket.x < 0 || rocket.x > GRID_SIZE || rocket.y < 0 || rocket.y > GRID_SIZE) {
+      showModal(false, "Roket keluar dari batas area permainan!");
+      return;
+    }
+
+    // 2. Win Check
+    if (rocket.x === moon.x && rocket.y === moon.y) {
+      showModal(true, "Luar biasa! Roket mendarat tepat di Bulan!");
+      return;
+    }
+
+    // 3. Max Steps Reached Check
+    if (movesCount >= maxSteps) {
+      showModal(false, "Kehabisan langkah! Roket gagal mencapai Bulan.");
+      return;
+    }
+
+    // Next step
+    isAnimating = false;
+    generateOptions();
+    draw();
+  }
+
+  function showModal(isWin, message) {
+    const modal = document.getElementById('gameModal');
+    const title = document.getElementById('modal-title');
+    const msg = document.getElementById('modal-msg');
+
+    if (isWin) {
+      title.innerText = "🎉 MENANG!";
+      title.style.color = "#4ade80";
+      msg.innerText = message + ` Naik ke Level ${level + 1}!`;
+      level++;
+    } else {
+      title.innerText = "💥 GAGAL!";
+      title.style.color = "#f87171";
+      let prevLvl = level;
+      level = Math.max(1, level - 1);
+      msg.innerText = message + (prevLvl > 1 ? ` Turun ke Level ${level}.` : "");
+    }
+
+    modal.style.display = "flex";
+  }
+
+  function nextAction() {
+    document.getElementById('gameModal').style.display = "none";
+    initLevel();
+  }
+
+  /* Drawing Logic */
+  function draw() {
+    const w = canvas.width;
+    const h = canvas.height;
+    const padding = 28;
+
+    const netW = w - padding * 2;
+    const netH = h - padding * 2;
+    const stepX = netW / GRID_SIZE;
+    const stepY = netH / GRID_SIZE;
+
+    // Helper: Coordinate conversion (Origin 0,0 at bottom-left)
+    function toCanvasX(gridX) { return padding + gridX * stepX; }
+    function toCanvasY(gridY) { return h - padding - gridY * stepY; }
+
+    // Clear Background
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, w, h);
+
+    // Draw Grid Lines & Numbers
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#1e293b";
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    for (let i = 0; i <= GRID_SIZE; i++) {
+      let x = toCanvasX(i);
+      let y = toCanvasY(i);
+
+      // Grid line X
+      ctx.beginPath();
+      ctx.strokeStyle = "#334155";
+      ctx.moveTo(x, padding);
+      ctx.lineTo(x, h - padding);
+      ctx.stroke();
+
+      // Grid line Y
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(w - padding, y);
+      ctx.stroke();
+
+      // Axis Numbers
+      ctx.fillText(i, x, h - 12);
+      ctx.fillText(i, 12, y);
+    }
+
+    // Draw Red Boundary Box
+    ctx.strokeStyle = "#ef4444";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(padding, padding, netW, netH);
+
+    // Draw Moon
+    const moonCX = toCanvasX(moon.x);
+    const moonCY = toCanvasY(moon.y);
+    ctx.fillStyle = "#facc15";
+    ctx.shadowColor = "#facc15";
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(moonCX, moonCY, Math.min(stepX, stepY) * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Moon craters
+    ctx.fillStyle = "#eab308";
+    ctx.beginPath();
+    ctx.arc(moonCX - 3, moonCY - 3, 3, 0, Math.PI * 2);
+    ctx.arc(moonCX + 4, moonCY + 2, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw Rocket
+    const rocketCX = toCanvasX(rocket.x);
+    const rocketCY = toCanvasY(rocket.y);
+    const rSize = Math.min(stepX, stepY) * 0.3;
+
+    ctx.save();
+    ctx.translate(rocketCX, rocketCY);
+
+    // Body
+    ctx.fillStyle = "#38bdf8";
+    ctx.shadowColor = "#38bdf8";
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(0, 0, rSize, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Fins
+    ctx.fillStyle = "#f43f5e";
+    ctx.fillRect(-rSize * 0.4, -rSize * 0.4, rSize * 0.8, rSize * 0.8);
+
+    ctx.restore();
+  }
+
+  // Initial Start
+  initLevel();
+</script>
 
-        const sfx = new SoundFX();
-
-        // Game State Variables
-        const state = {
-            level: 1,
-            moves: 0,
-            maxMoves: 10,
-            gridSize: { x: 10, y: 15 },
-            rocketPos: { x: 0, y: 0 },
-            moonPos: { x: 6, y: 10 },
-            asteroids: [],
-            pathHistory: [{ x: 0, y: 0 }],
-            options: [],
-            isMoving: false,
-            hoveredOption: null,
-            animRocket: { x: 0, y: 0, angle: 0 },
-            stars: []
-        };
-
-        // Level Configurations
-        const levelConfigs = [
-            { level: 1, grid: { x: 8, y: 12 }, moon: { x: 5, y: 9 }, maxMoves: 10, asteroidsCount: 0 },
-            { level: 2, grid: { x: 10, y: 14 }, moon: { x: 7, y: 12 }, maxMoves: 12, asteroidsCount: 3 },
-            { level: 3, grid: { x: 12, y: 16 }, moon: { x: 9, y: 14 }, maxMoves: 12, asteroidsCount: 6 },
-            { level: 4, grid: { x: 14, y: 18 }, moon: { x: 11, y: 16 }, maxMoves: 14, asteroidsCount: 9 },
-        ];
-
-        // Canvas Elements Setup
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            const rect = canvas.parentElement.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio;
-            canvas.height = rect.height * window.devicePixelRatio;
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-            render();
-        }
-
-        function initStars() {
-            state.stars = [];
-            for (let i = 0; i < 60; i++) {
-                state.stars.push({
-                    x: Math.random(),
-                    y: Math.random(),
-                    size: Math.random() * 1.5 + 0.5,
-                    alpha: Math.random()
-                });
-            }
-        }
-
-        function loadLevel(lvlNum) {
-            const cfg = levelConfigs[(lvlNum - 1) % levelConfigs.length];
-            state.level = lvlNum;
-            state.moves = 0;
-            state.maxMoves = cfg.maxMoves;
-            state.gridSize = { ...cfg.grid };
-            
-            // Randomize varied Rocket and Moon positions with minimum separation
-            let rx, ry, mx, my, dist;
-            do {
-                rx = Math.floor(Math.random() * (cfg.grid.x - 1));
-                ry = Math.floor(Math.random() * (cfg.grid.y - 1));
-                mx = Math.floor(Math.random() * (cfg.grid.x - 1)) + 1;
-                my = Math.floor(Math.random() * (cfg.grid.y - 1)) + 1;
-                dist = Math.abs(mx - rx) + Math.abs(my - ry);
-            } while (dist < Math.min(cfg.grid.x, cfg.grid.y) * 0.6);
-
-            state.rocketPos = { x: rx, y: ry };
-            state.moonPos = { x: mx, y: my };
-            state.animRocket = { x: rx, y: ry, angle: 0 };
-            state.pathHistory = [{ x: rx, y: ry }];
-            state.isMoving = false;
-            state.hoveredOption = null;
-
-            // Generate Asteroids avoiding Start and Moon
-            state.asteroids = [];
-            let attempts = 0;
-            while (state.asteroids.length < cfg.asteroidsCount && attempts < 100) {
-                attempts++;
-                const ax = Math.floor(Math.random() * (cfg.grid.x + 1));
-                const ay = Math.floor(Math.random() * (cfg.grid.y + 1));
-                
-                // Don't place on Rocket or Moon position
-                if ((ax === rx && ay === ry) || (ax === mx && ay === my)) continue;
-                // Don't duplicate
-                if (state.asteroids.some(a => a.x === ax && a.y === ay)) continue;
-
-                state.asteroids.push({ x: ax, y: ay });
-            }
-
-            generateTranslationOptions();
-            updateHUD();
-            showToast(`Level ${lvlNum}: Capai Bulan di (${state.moonPos.x}, ${state.moonPos.y})`);
-            render();
-        }
-
-        function generateTranslationOptions() {
-            const current = state.rocketPos;
-            const moon = state.moonPos;
-            const dx = moon.x - current.x;
-            const dy = moon.y - current.y;
-
-            // Helper to build random integer vector
-            const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-            let choices = [];
-
-            // After 5 steps (on step 6+), guarantee at least 1 winning choice to the moon
-            if (state.moves >= 5) {
-                choices.push({ x: dx, y: dy });
-            } else {
-                // Smart Option: moves towards moon on at least one axis
-                let smartX = dx !== 0 ? Math.sign(dx) * randInt(1, Math.min(3, Math.abs(dx))) : randInt(-1, 1);
-                let smartY = dy !== 0 ? Math.sign(dy) * randInt(1, Math.min(3, Math.abs(dy))) : randInt(-1, 1);
-                choices.push({ x: smartX, y: smartY });
-            }
-
-            // 2. Alternative Option: slight variation
-            let altX = randInt(-2, 3);
-            let altY = randInt(-1, 4);
-            choices.push({ x: altX, y: altY });
-
-            // 3. Curve / Strategic Option
-            let stratX = randInt(-3, 3);
-            let stratY = randInt(-2, 3);
-            choices.push({ x: stratX, y: stratY });
-
-            // Ensure no duplicate vector choices
-            choices = choices.map(c => {
-                // Ensure vector isn't [0,0]
-                if (c.x === 0 && c.y === 0) c.y = 1;
-                return c;
-            });
-
-            // Prevent exact identical buttons
-            for (let i = 1; i < choices.length; i++) {
-                if (choices[i].x === choices[0].x && choices[i].y === choices[0].y) {
-                    choices[i].x += (i === 1 ? 1 : -1);
-                }
-            }
-
-            // Shuffle choices array
-            state.options = choices.sort(() => Math.random() - 0.5);
-            renderOptionButtons();
-        }
-
-        function renderOptionButtons() {
-            const container = document.getElementById('options-container');
-            container.innerHTML = '';
-
-            state.options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = `btn-option bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700/80 rounded-xl p-2.5 flex flex-col items-center justify-center text-center shadow-md active:border-sky-500 transition group`;
-                
-                // Format text with positive signs for clarity
-                const formatNum = (n) => n > 0 ? `+${n}` : `${n}`;
-
-                btn.innerHTML = `
-                    <span class="text-[10px] text-slate-400 group-hover:text-sky-300 mb-0.5">Opsi ${index + 1}</span>
-                    <span class="text-sm md:text-base font-bold font-space text-sky-400 group-hover:scale-105 transition-transform">
-                        [ ${formatNum(opt.x)} , ${formatNum(opt.y)} ]
-                    </span>
-                `;
-
-                // Touch & Mouse Hover Effects for vector preview
-                btn.addEventListener('mouseenter', () => {
-                    if (!state.isMoving) {
-                        state.hoveredOption = opt;
-                        render();
-                    }
-                });
-                btn.addEventListener('mouseleave', () => {
-                    if (!state.isMoving) {
-                        state.hoveredOption = null;
-                        render();
-                    }
-                });
-
-                // Click event to move rocket
-                btn.addEventListener('click', () => {
-                    sfx.init();
-                    if (!state.isMoving) {
-                        applyTranslation(opt);
-                    }
-                });
-
-                container.appendChild(btn);
-            });
-        }
-
-        function applyTranslation(vector) {
-            state.isMoving = true;
-            state.hoveredOption = null;
-            state.moves++;
-            sfx.playMove();
-
-            const startX = state.rocketPos.x;
-            const startY = state.rocketPos.y;
-            const midX = startX + vector.x;
-            const targetX = startX + vector.x;
-            const targetY = startY + vector.y;
-
-            const duration = 700; // ms total
-            const startTime = performance.now();
-
-            function animateStep(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-
-                if (progress <= 0.5 || vector.y === 0) {
-                    // Phase 1: Horizontal Movement (Kanan / Kiri)
-                    const p1 = Math.min(progress * 2, 1);
-                    const easeP1 = 1 - Math.pow(1 - p1, 3);
-                    state.animRocket.x = startX + vector.x * easeP1;
-                    state.animRocket.y = startY;
-                    state.animRocket.angle = vector.x >= 0 ? 0 : Math.PI; // Right or Left facing
-                } else {
-                    // Phase 2: Vertical Movement (Atas / Bawah)
-                    const p2 = (progress - 0.5) * 2;
-                    const easeP2 = 1 - Math.pow(1 - p2, 3);
-                    state.animRocket.x = targetX;
-                    state.animRocket.y = startY + vector.y * easeP2;
-                    state.animRocket.angle = vector.y >= 0 ? Math.PI / 2 : -Math.PI / 2; // Up or Down facing
-                }
-
-                render();
-
-                if (progress < 1) {
-                    requestAnimationFrame(animateStep);
-                } else {
-                    // Motion completed: record intermediate turn point for L-shaped path
-                    if (vector.x !== 0 && vector.y !== 0) {
-                        state.pathHistory.push({ x: midX, y: startY });
-                    }
-                    state.rocketPos = { x: targetX, y: targetY };
-                    state.pathHistory.push({ ...state.rocketPos });
-                    state.isMoving = false;
-                    
-                    updateHUD();
-                    checkGameRules(startX, startY, midX, targetY);
-                }
-            }
-
-            requestAnimationFrame(animateStep);
-        }
-
-        function checkGameRules(startX, startY, midX, targetY) {
-            // Check boundary violation at intermediate turn point or target point
-            const intermediateOutOfBounds = midX < 0 || midX > state.gridSize.x || startY < 0 || startY > state.gridSize.y;
-            const targetOutOfBounds = state.rocketPos.x < 0 || state.rocketPos.x > state.gridSize.x ||
-                state.rocketPos.y < 0 || state.rocketPos.y > state.gridSize.y;
-
-            if (intermediateOutOfBounds || targetOutOfBounds) {
-                sfx.playCrash();
-                showResultModal(false, "Misi Gagal! Roket menabrak / melewati batas area perbatasan.");
-                return;
-            }
-
-            // Check Asteroid collision at intermediate turn point or target point
-            const hitMidAsteroid = state.asteroids.some(a => a.x === midX && a.y === startY);
-            const hitTargetAsteroid = state.asteroids.some(a => a.x === state.rocketPos.x && a.y === state.rocketPos.y);
-
-            if (hitMidAsteroid || hitTargetAsteroid) {
-                sfx.playCrash();
-                showResultModal(false, "Misi Gagal! Roket menabrak sabuk asteroid.");
-                return;
-            }
-
-            // 1. Reached Moon
-            if (state.rocketPos.x === state.moonPos.x && state.rocketPos.y === state.moonPos.y) {
-                sfx.playWin();
-                showResultModal(true, "Selamat! Roket berhasil mendarat tepat di Bulan.");
-                return;
-            }
-
-            // 4. Out of Moves / Fuel
-            if (state.moves >= state.maxMoves) {
-                sfx.playCrash();
-                showResultModal(false, "Misi Gagal! Roket kehabisan bahan bakar.");
-                return;
-            }
-
-            // Regenerate options for next turn
-            generateTranslationOptions();
-        }
-
-        function updateHUD() {
-            document.getElementById('level-display').innerText = state.level;
-            document.getElementById('moves-count').innerText = `${state.moves} / ${state.maxMoves}`;
-            document.getElementById('pos-rocket').innerText = `(${state.rocketPos.x}, ${state.rocketPos.y})`;
-            document.getElementById('pos-moon').innerText = `(${state.moonPos.x}, ${state.moonPos.y})`;
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('game-toast');
-            document.getElementById('toast-text').innerText = msg;
-            toast.classList.remove('opacity-0');
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-            }, 3000);
-        }
-
-        function render() {
-            const w = canvas.parentElement.getBoundingClientRect().width;
-            const h = canvas.parentElement.getBoundingClientRect().height;
-
-            ctx.clearRect(0, 0, w, h);
-
-            // Padding around grid
-            const padding = 35;
-            const gridW = w - padding * 2;
-            const gridH = h - padding * 2;
-
-            const maxGridX = state.gridSize.x;
-            const maxGridY = state.gridSize.y;
-
-            const stepX = gridW / maxGridX;
-            const stepY = gridH / maxGridY;
-
-            // Coordinate conversion: Space (x, y) to Canvas Pixel (px, py)
-            // (0,0) is bottom-left inside padding
-            const toCanvasCoords = (gx, gy) => {
-                return {
-                    x: padding + gx * stepX,
-                    y: h - padding - gy * stepY
-                };
-            };
-
-            // 1. Draw Starfield Background
-            ctx.fillStyle = '#ffffff';
-            state.stars.forEach(star => {
-                ctx.globalAlpha = star.alpha * 0.6;
-                ctx.fillRect(star.x * w, star.y * h, star.size, star.size);
-            });
-            ctx.globalAlpha = 1.0;
-
-            // 2. Draw Coordinate Grid Lines
-            ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
-            ctx.lineWidth = 1;
-
-            // Vertical lines
-            for (let x = 0; x <= maxGridX; x++) {
-                const pt1 = toCanvasCoords(x, 0);
-                const pt2 = toCanvasCoords(x, maxGridY);
-                ctx.beginPath();
-                ctx.moveTo(pt1.x, pt1.y);
-                ctx.lineTo(pt2.x, pt2.y);
-                ctx.stroke();
-
-                // Axis Numbers X
-                ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
-                ctx.font = '10px Space Grotesk';
-                ctx.textAlign = 'center';
-                ctx.fillText(x, pt1.x, pt1.y + 14);
-            }
-
-            // Horizontal lines
-            for (let y = 0; y <= maxGridY; y++) {
-                const pt1 = toCanvasCoords(0, y);
-                const pt2 = toCanvasCoords(maxGridX, y);
-                ctx.beginPath();
-                ctx.moveTo(pt1.x, pt1.y);
-                ctx.lineTo(pt2.x, pt2.y);
-                ctx.stroke();
-
-                // Axis Numbers Y
-                ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
-                ctx.font = '10px Space Grotesk';
-                ctx.textAlign = 'right';
-                ctx.fillText(y, pt1.x - 6, pt1.y + 3);
-            }
-
-            // Draw Outer Boundary Red Wall Box
-            const bBottomLeft = toCanvasCoords(0, 0);
-            const bTopRight = toCanvasCoords(maxGridX, maxGridY);
-            ctx.strokeStyle = 'rgba(239, 68, 68, 0.8)';
-            ctx.lineWidth = 2.5;
-            ctx.strokeRect(bBottomLeft.x, bTopRight.y, bTopRight.x - bBottomLeft.x, bBottomLeft.y - bTopRight.y);
-
-            // 3. Draw Trajectory Path History
-            if (state.pathHistory.length > 1) {
-                ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([4, 4]);
-                ctx.beginPath();
-                state.pathHistory.forEach((pt, idx) => {
-                    const cpt = toCanvasCoords(pt.x, pt.y);
-                    if (idx === 0) ctx.moveTo(cpt.x, cpt.y);
-                    else ctx.lineTo(cpt.x, cpt.y);
-                });
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            // 4. Draw Vector Preview (Hovering Option) - Disabled for Level 3 and above
-            if (state.hoveredOption && !state.isMoving && state.level < 3) {
-                const current = toCanvasCoords(state.rocketPos.x, state.rocketPos.y);
-                const midG = {
-                    x: state.rocketPos.x + state.hoveredOption.x,
-                    y: state.rocketPos.y
-                };
-                const targetG = {
-                    x: state.rocketPos.x + state.hoveredOption.x,
-                    y: state.rocketPos.y + state.hoveredOption.y
-                };
-                const mid = toCanvasCoords(midG.x, midG.y);
-                const target = toCanvasCoords(targetG.x, targetG.y);
-
-                // L-shaped dotted preview path (Horizontal then Vertical)
-                ctx.strokeStyle = '#f59e0b';
-                ctx.lineWidth = 2.5;
-                ctx.setLineDash([5, 5]);
-                ctx.beginPath();
-                ctx.moveTo(current.x, current.y);
-                ctx.lineTo(mid.x, mid.y);
-                ctx.lineTo(target.x, target.y);
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                // Intermediate turn point indicator
-                if (state.hoveredOption.x !== 0 && state.hoveredOption.y !== 0) {
-                    ctx.fillStyle = '#f59e0b';
-                    ctx.beginPath();
-                    ctx.arc(mid.x, mid.y, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                // Target preview node circle
-                ctx.fillStyle = 'rgba(245, 158, 11, 0.3)';
-                ctx.strokeStyle = '#f59e0b';
-                ctx.beginPath();
-                ctx.arc(target.x, target.y, 8, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-            }
-
-            // 5. Draw Start Earth Station
-            const earthPt = toCanvasCoords(state.pathHistory[0].x, state.pathHistory[0].y);
-            ctx.fillStyle = '#3b82f6';
-            ctx.beginPath();
-            ctx.arc(earthPt.x, earthPt.y, 7, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 6. Draw Moon Target
-            const moonPt = toCanvasCoords(state.moonPos.x, state.moonPos.y);
-            // Moon Glow Aura
-            const moonGlow = ctx.createRadialGradient(moonPt.x, moonPt.y, 4, moonPt.x, moonPt.y, 20);
-            moonGlow.addColorStop(0, 'rgba(254, 240, 138, 0.6)');
-            moonGlow.addColorStop(1, 'rgba(254, 240, 138, 0)');
-            ctx.fillStyle = moonGlow;
-            ctx.beginPath();
-            ctx.arc(moonPt.x, moonPt.y, 20, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Moon Body
-            ctx.fillStyle = '#fef08a';
-            ctx.beginPath();
-            ctx.arc(moonPt.x, moonPt.y, 11, 0, Math.PI * 2);
-            ctx.fill();
-            // Craters on Moon
-            ctx.fillStyle = '#eab308';
-            ctx.beginPath();
-            ctx.arc(moonPt.x - 3, moonPt.y - 3, 2.5, 0, Math.PI * 2);
-            ctx.arc(moonPt.x + 3, moonPt.y + 2, 2, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 7. Draw Asteroids
-            state.asteroids.forEach(ast => {
-                const apt = toCanvasCoords(ast.x, ast.y);
-                ctx.fillStyle = '#64748b';
-                ctx.strokeStyle = '#475569';
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.arc(apt.x, apt.y, 7, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-
-                // Danger cross mark
-                ctx.strokeStyle = '#ef4444';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(apt.x - 3, apt.y - 3);
-                ctx.lineTo(apt.x + 3, apt.y + 3);
-                ctx.moveTo(apt.x + 3, apt.y - 3);
-                ctx.lineTo(apt.x - 3, apt.y + 3);
-                ctx.stroke();
-            });
-
-            // 8. Draw Rocket
-            const rPos = state.isMoving ? state.animRocket : state.rocketPos;
-            const rPt = toCanvasCoords(rPos.x, rPos.y);
-
-            ctx.save();
-            ctx.translate(rPt.x, rPt.y);
-
-            // Rotate according to vector angle or point up default
-            const renderAngle = state.isMoving ? -state.animRocket.angle + Math.PI / 2 : 0;
-            ctx.rotate(renderAngle);
-
-            // Rocket Flame animation when moving
-            if (state.isMoving) {
-                ctx.fillStyle = Math.random() > 0.5 ? '#f97316' : '#ef4444';
-                ctx.beginPath();
-                ctx.moveTo(-4, 8);
-                ctx.lineTo(0, 16 + Math.random() * 4);
-                ctx.lineTo(4, 8);
-                ctx.closePath();
-                ctx.fill();
-            }
-
-            // Rocket Body
-            ctx.fillStyle = '#38bdf8';
-            ctx.beginPath();
-            ctx.moveTo(0, -12);
-            ctx.lineTo(6, 6);
-            ctx.lineTo(-6, 6);
-            ctx.closePath();
-            ctx.fill();
-
-            // Rocket Nose Cone
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.moveTo(0, -12);
-            ctx.lineTo(3, -4);
-            ctx.lineTo(-3, -4);
-            ctx.closePath();
-            ctx.fill();
-
-            // Rocket Fins
-            ctx.fillStyle = '#0284c7';
-            ctx.fillRect(-8, 3, 3, 5);
-            ctx.fillRect(5, 3, 3, 5);
-
-            ctx.restore();
-        }
-
-        function showResultModal(isWin, desc) {
-            const modal = document.getElementById('modal-result');
-            const iconBox = document.getElementById('result-icon-box');
-            const title = document.getElementById('result-title');
-            const resultDesc = document.getElementById('result-desc');
-            const btnNext = document.getElementById('btn-next-level');
-
-            document.getElementById('res-moves').innerText = `${state.moves} langkah`;
-            document.getElementById('res-level').innerText = `Level ${state.level}`;
-
-            if (isWin) {
-                iconBox.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
-                iconBox.innerHTML = '<i class="fa-solid fa-trophy"></i>';
-                title.innerText = "Misi Berhasil!";
-                title.className = "text-xl font-bold font-space mb-1 text-emerald-400";
-                resultDesc.innerText = desc;
-                btnNext.innerText = "Lanjut Level Berikutnya";
-                btnNext.onclick = () => {
-                    modal.classList.add('hidden');
-                    loadLevel(state.level + 1);
-                };
-            } else {
-                const prevLevel = Math.max(1, state.level - 1);
-                iconBox.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3 bg-rose-500/20 text-rose-400 border border-rose-500/40';
-                iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-                title.innerText = "Misi Gagal!";
-                title.className = "text-xl font-bold font-space mb-1 text-rose-400";
-                resultDesc.innerText = state.level > 1 
-                    ? `${desc} Level kamu turun ke Level ${prevLevel}.` 
-                    : desc;
-                btnNext.innerText = state.level > 1 ? `Coba Lagi (Level ${prevLevel})` : "Coba Lagi";
-                btnNext.onclick = () => {
-                    modal.classList.add('hidden');
-                    loadLevel(prevLevel);
-                };
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        document.getElementById('btn-restart').addEventListener('click', () => {
-            loadLevel(state.level);
-        });
-
-        document.getElementById('btn-help').addEventListener('click', () => {
-            document.getElementById('modal-guide').classList.remove('hidden');
-        });
-
-        document.getElementById('btn-close-guide').addEventListener('click', () => {
-            document.getElementById('modal-guide').classList.add('hidden');
-        });
-
-        window.addEventListener('resize', resizeCanvas);
-
-        // Initial Initialization on load
-        window.onload = () => {
-            initStars();
-            resizeCanvas();
-            loadLevel(1);
-        };
-    </script>
 </body>
 </html>
