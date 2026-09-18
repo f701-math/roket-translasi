@@ -1,560 +1,931 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Petualangan Roket Translasi by Fauzul</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      color: #f8fafc;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden; /* Mencegah scroll pada layar HP */
-    }
-
-    .app-container {
-      width: 100%;
-      max-width: 480px;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 10px;
-      background: #1e293b;
-    }
-
-    /* Header & Stats */
-    .header {
-      background: #334155;
-      border-radius: 12px;
-      padding: 10px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-      border: 1px solid #475569;
-    }
-
-    .title-group h1 {
-      font-size: 1.1rem;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .step-badge {
-      font-size: 0.85rem;
-      background: #0f172a;
-      padding: 4px 10px;
-      border-radius: 20px;
-      color: #fbbf24;
-      font-weight: bold;
-      border: 1px solid #64748b;
-    }
-
-    /* Coords Display */
-    .coords-bar {
-      display: flex;
-      gap: 8px;
-      margin: 8px 0;
-    }
-
-    .coord-box {
-      flex: 1;
-      background: #334155;
-      padding: 6px 10px;
-      border-radius: 8px;
-      text-align: center;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border: 1px solid #475569;
-    }
-
-    .coord-box.rocket { color: #38bdf8; }
-    .coord-box.moon { color: #facc15; }
-
-    /* Canvas Area */
-    .canvas-container {
-      flex: 1;
-      position: relative;
-      background: #090d16;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 2px solid #3b82f6;
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 0; /* Penting untuk flex layout di HP */
-    }
-
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Controls Section */
-    .controls-panel {
-      background: #334155;
-      border-radius: 12px;
-      padding: 10px;
-      margin-top: 8px;
-      border: 1px solid #475569;
-    }
-
-    .panel-title {
-      text-align: center;
-      font-size: 0.8rem;
-      letter-spacing: 1px;
-      color: #94a3b8;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
-
-    .options-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .btn-option {
-      background: linear-gradient(180deg, #2563eb, #1d4ed8);
-      border: 2px solid #60a5fa;
-      color: white;
-      padding: 10px 4px;
-      border-radius: 10px;
-      font-size: 1.05rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    }
-
-    .btn-option:active {
-      transform: scale(0.95);
-      background: #1e40af;
-    }
-
-    .btn-option .sub-label {
-      font-size: 0.65rem;
-      color: #bfdbfe;
-      font-weight: normal;
-    }
-
-    .btn-option:disabled {
-      background: #475569;
-      border-color: #64748b;
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* Modal Overlay */
-    .modal {
-      display: none;
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(4px);
-      z-index: 10;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .modal-content {
-      background: #1e293b;
-      border: 2px solid #38bdf8;
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      max-width: 320px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-
-    .modal h2 { font-size: 1.4rem; margin-bottom: 8px; }
-    .modal p { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 16px; line-height: 1.4; }
-    .modal-btn {
-      background: #22c55e;
-      color: white;
-      border: none;
-      padding: 10px 24px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-
-<div class="app-container">
-  <!-- Header -->
-  <div class="header">
-    <div class="title-group">
-      <h1>🚀 LEVEL <span id="lvl-display">1</span></h1>
-    </div>
-    <div class="step-badge">
-      LANGKAH: <span id="step-display">0</span>/<span id="max-step-display">10</span>
-    </div>
-  </div>
-
-  <!-- Coordinates -->
-  <div class="coords-bar">
-    <div class="coord-box rocket">🚀 Roket: <span id="rocket-coord">(0,0)</span></div>
-    <div class="coord-box moon">🌕 Bulan: <span id="moon-coord">(0,0)</span></div>
-  </div>
-
-  <!-- Game Canvas -->
-  <div class="canvas-container" id="canvas-wrapper">
-    <canvas id="gameCanvas"></canvas>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Petualangan Roket Translasi by Fauzul</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     
-    <!-- Modal Result -->
-    <div class="modal" id="gameModal">
-      <div class="modal-content">
-        <h2 id="modal-title">MENANG!</h2>
-        <p id="modal-msg">Roket berhasil mendarat di Bulan!</p>
-        <button class="modal-btn" onclick="nextAction()">Lanjut</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Controls Panel -->
-  <div class="controls-panel">
-    <div class="panel-title">PILIH NOTASI TRANSLASI [X, Y]</div>
-    <div class="options-grid">
-      <button class="btn-option" id="opt-0" onclick="makeMove(0)">
-        <span id="label-0">[0, 0]</span>
-        <span class="sub-label">Pilihan 1</span>
-      </button>
-      <button class="btn-option" id="opt-1" onclick="makeMove(1)">
-        <span id="label-1">[0, 0]</span>
-        <span class="sub-label">Pilihan 2</span>
-      </button>
-      <button class="btn-option" id="opt-2" onclick="makeMove(2)">
-        <span id="label-2">[0, 0]</span>
-        <span class="sub-label">Pilihan 3</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<script>
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
-  const wrapper = document.getElementById('canvas-wrapper');
-
-  // Game State Variables
-  const GRID_SIZE = 10;
-  let level = 1;
-  let stepsLeft = 10;
-  let maxSteps = 10;
-  let movesCount = 0;
-  let isAnimating = false;
-
-  let rocket = { x: 0, y: 0 };
-  let moon = { x: 0, y: 0 };
-  let currentOptions = [];
-  let currentHoverOpt = null;
-
-  // Responsiveness Adjustment
-  function resizeCanvas() {
-    const rect = wrapper.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-    draw();
-  }
-  window.addEventListener('resize', resizeCanvas);
-
-  function initLevel() {
-    isAnimating = false;
-    movesCount = 0;
-
-    // Grid bounds: 0 to 10
-    // Generate Random Start Positions
-    rocket.x = Math.floor(Math.random() * 4) + 1; // 1..4
-    rocket.y = Math.floor(Math.random() * 4) + 1; // 1..4
-
-    moon.x = Math.floor(Math.random() * 4) + 6; // 6..9
-    moon.y = Math.floor(Math.random() * 4) + 6; // 6..9
-
-    maxSteps = Math.max(8, 12 - Math.floor(level / 2));
-    stepsLeft = maxSteps;
-
-    updateUI();
-    generateOptions();
-    resizeCanvas();
-  }
-
-  function updateUI() {
-    document.getElementById('lvl-display').innerText = level;
-    document.getElementById('step-display').innerText = movesCount;
-    document.getElementById('max-step-display').innerText = maxSteps;
-    document.getElementById('rocket-coord').innerText = `(${rocket.x}, ${rocket.y})`;
-    document.getElementById('moon-coord').innerText = `(${moon.x}, ${moon.y})`;
-  }
-
-  function generateOptions() {
-    currentOptions = [];
-    movesCount++;
-    document.getElementById('step-display').innerText = movesCount;
-
-    // Distance to Moon
-    const dx = moon.x - rocket.x;
-    const dy = moon.y - rocket.y;
-
-    // After 5 steps (on step 6 onwards), guarantee at least 1 winning option
-    let winningIndex = -1;
-    if (movesCount >= 6) {
-      winningIndex = Math.floor(Math.random() * 3);
-    }
-
-    for (let i = 0; i < 3; i++) {
-      if (i === winningIndex) {
-        currentOptions.push([dx, dy]);
-      } else {
-        let rx = Math.floor(Math.random() * 9) - 4; // -4 to 4
-        let ry = Math.floor(Math.random() * 9) - 4; // -4 to 4
-        // Avoid duplicate winning vector prematurely
-        if (rx === dx && ry === dy && winningIndex === -1) {
-          rx += 1;
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
-        currentOptions.push([rx, ry]);
-      }
-    }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #050714;
+            color: #f1f5f9;
+            overflow: hidden;
+        }
+        .font-space {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .glow-text {
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
+        }
+        .glow-card {
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-option {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-option:active {
+            transform: scale(0.95);
+        }
+        .btn-option:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+            50% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.6); }
+        }
+        .pulse-active {
+            animation: pulse-glow 2s infinite;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between p-2 md:p-4 max-w-lg mx-auto relative overflow-hidden bg-slate-950 select-none">
 
-    // Render option buttons
-    for (let i = 0; i < 3; i++) {
-      const [x, y] = currentOptions[i];
-      const signX = x >= 0 ? `+${x}` : `${x}`;
-      const signY = y >= 0 ? `+${y}` : `${y}`;
-      document.getElementById(`label-${i}`).innerText = `[${signX}, ${signY}]`;
-      document.getElementById(`opt-${i}`).disabled = false;
-    }
-  }
+    <!-- Top HUD Bar -->
+    <header class="w-full bg-slate-900/80 rounded-2xl p-3 glow-card flex justify-between items-center z-10 border border-slate-800">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-sky-400 font-semibold tracking-wider uppercase">Level <span id="level-display">1</span></span>
+                <span id="level-badge" class="text-[10px] bg-sky-950 border border-sky-800 text-sky-300 px-2 py-0.5 rounded-full font-bold">Pemula</span>
+            </div>
+            <h1 class="text-sm md:text-base font-bold text-white font-space flex items-center gap-1.5">
+                <i class="fa-solid fa-rocket text-amber-400"></i> Menuju Bulan
+            </h1>
+        </div>
+        <div class="flex items-center gap-2 md:gap-3">
+            <!-- Moves/Fuel Count -->
+            <div class="text-right px-2">
+                <span class="text-[10px] text-slate-400 block uppercase font-bold">Langkah</span>
+                <span id="moves-count" class="text-sm font-bold text-emerald-400 font-space">0 / 10</span>
+            </div>
+            <!-- Audio Mute Toggle Button -->
+            <button id="btn-audio" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 active:scale-90 transition" title="Suara">
+                <i id="audio-icon" class="fa-solid fa-volume-high text-xs text-emerald-400"></i>
+            </button>
+            <!-- Restart Button -->
+            <button id="btn-restart" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 active:scale-90 transition" title="Ulangi Level">
+                <i class="fa-solid fa-rotate-right text-xs"></i>
+            </button>
+            <!-- Help Button -->
+            <button id="btn-help" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-sky-400 active:scale-90 transition" title="Panduan & Rumus">
+                <i class="fa-solid fa-circle-question text-xs"></i>
+            </button>
+        </div>
+    </header>
 
-  function makeMove(index) {
-    if (isAnimating) return;
-    isAnimating = true;
+    <!-- Position & Math Formula Status Bar -->
+    <div class="w-full flex justify-between items-center px-1 my-1 z-10 text-xs font-space">
+        <div class="bg-indigo-950/80 border border-indigo-800/60 px-3 py-1.5 rounded-xl text-indigo-200 flex items-center gap-1.5">
+            <i class="fa-solid fa-location-dot text-sky-400"></i> 
+            <span>P:</span> <span id="pos-rocket" class="font-bold text-white">(0, 0)</span>
+        </div>
+        
+        <div class="hidden sm:block text-[11px] text-slate-400 bg-slate-900/60 px-2 py-1 rounded-lg border border-slate-800">
+            <span class="text-sky-400">P' = (x + a, y + b)</span>
+        </div>
 
-    // Disable all option buttons during animation
-    for (let i = 0; i < 3; i++) {
-      document.getElementById(`opt-${i}`).disabled = true;
-    }
+        <div class="bg-amber-950/80 border border-amber-800/60 px-3 py-1.5 rounded-xl text-amber-200 flex items-center gap-1.5">
+            <i class="fa-solid fa-moon text-amber-300"></i> 
+            <span>Bulan:</span> <span id="pos-moon" class="font-bold text-white">(5, 9)</span>
+        </div>
+    </div>
 
-    const [tx, ty] = currentOptions[index];
-    const targetX = rocket.x + tx;
-    const targetY = rocket.y + ty;
+    <!-- Main Interactive Canvas Container -->
+    <main class="relative flex-1 w-full my-1 rounded-2xl overflow-hidden glow-card border border-slate-800 bg-slate-950/90 flex items-center justify-center">
+        <canvas id="gameCanvas" class="w-full h-full block rounded-2xl"></canvas>
+        
+        <!-- Toast Notification Overlay inside canvas -->
+        <div id="game-toast" class="absolute top-3 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-sky-500/50 text-sky-200 px-4 py-2 rounded-full text-xs font-medium shadow-xl opacity-0 transition-all duration-300 pointer-events-none z-20 flex items-center gap-2">
+            <i id="toast-icon" class="fa-solid fa-circle-info text-sky-400"></i>
+            <span id="toast-text">Pilih notasi translasi untuk bergerak</span>
+        </div>
+    </main>
 
-    // Animate movement horizontally first (L-shape), then vertically
-    let startX = rocket.x;
-    let startY = rocket.y;
-    let duration = 600; // ms
-    let startTime = null;
+    <!-- Control Panel / Translation Choice Buttons -->
+    <footer class="w-full bg-slate-900/90 rounded-2xl p-3 glow-card z-10 border border-slate-800">
+        <div class="flex justify-between items-center mb-2 px-1">
+            <span class="text-[11px] font-medium text-slate-400 uppercase tracking-widest font-space flex items-center gap-1.5">
+                <i class="fa-solid fa-arrows-up-down-left-right text-sky-400"></i> MATRIKS TRANSLASI <span class="text-sky-400 font-bold">T = [a, b]</span>
+            </span>
+            <span id="formula-preview" class="text-[11px] text-amber-400 font-mono hidden md:inline-block">P'(x+a, y+b)</span>
+        </div>
 
-    function stepAnimation(timestamp) {
-      if (!startTime) startTime = timestamp;
-      let progress = (timestamp - startTime) / duration;
+        <div class="grid grid-cols-3 gap-2" id="options-container">
+            <!-- Dynamic option buttons rendered via JS -->
+        </div>
+    </footer>
 
-      if (progress > 1) progress = 1;
+    <!-- Tutorial & Mathematical Concept Modal -->
+    <div id="modal-guide" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-sm w-full shadow-2xl relative">
+            <button id="btn-close-guide-x" class="absolute top-3 right-3 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
 
-      // First half: Move X, Second half: Move Y
-      if (progress < 0.5) {
-        let p1 = progress * 2;
-        rocket.x = startX + tx * p1;
-        rocket.y = startY;
-      } else {
-        let p2 = (progress - 0.5) * 2;
-        rocket.x = startX + tx;
-        rocket.y = startY + ty * p2;
-      }
+            <h2 class="text-lg font-bold text-sky-400 mb-2 font-space flex items-center gap-2">
+                <i class="fa-solid fa-square-root-variable text-amber-400"></i> Konsep Translasi Geometri
+            </h2>
+            
+            <div class="text-xs text-slate-300 space-y-3 leading-relaxed">
+                <p><strong>Translasi (Pergeseran)</strong> adalah memindahkan setiap titik pada bidang menurut jarak dan arah tertentu.</p>
+                
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <p class="font-bold text-sky-300 font-mono text-center text-sm">
+                        P(x, y) + T(a, b) = P'(x + a, y + b)
+                    </p>
+                    <ul class="list-disc list-inside space-y-1 text-[11px] text-slate-300">
+                        <li><strong class="text-sky-400">a (Komponen X)</strong>: KANAN jika Positif (+), KIRI jika Negatif (-)</li>
+                        <li><strong class="text-emerald-400">b (Komponen Y)</strong>: ATAS jika Positif (+), BAWAH jika Negatif (-)</li>
+                        <li><strong>(x, y)</strong>: Koordinat awal posisi roket</li>
+                        <li><strong>(x', y')</strong>: Koordinat baru hasil pergeseran</li>
+                    </ul>
+                </div>
 
-      draw();
+                <div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/40 text-[11px] text-amber-200 flex gap-2 items-start">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400 mt-0.5"></i>
+                    <span>Hindari sabuk asteroid & garis batas luar angkasa! Capai posisi Bulan dengan pas.</span>
+                </div>
+            </div>
 
-      if (progress < 1) {
-        requestAnimationFrame(stepAnimation);
-      } else {
-        // Round position to integer
-        rocket.x = targetX;
-        rocket.y = targetY;
-        updateUI();
+            <button id="btn-close-guide" class="w-full mt-4 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs font-space transition shadow-lg">
+                Siap, Mulai Misi!
+            </button>
+        </div>
+    </div>
 
-        // Check Win/Loss conditions
-        checkGameStatus();
-      }
-    }
+    <!-- Win / Game Over Result Modal -->
+    <div id="modal-result" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-xs w-full text-center shadow-2xl relative">
+            <div id="result-icon-box" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3">
+                <!-- Dynamic icon -->
+            </div>
+            <h2 id="result-title" class="text-xl font-bold font-space mb-1">Misi Berhasil!</h2>
+            <p id="result-desc" class="text-xs text-slate-300 mb-4">Roket berhasil mendarat di Bulan dengan selamat.</p>
+            
+            <!-- Result Stats Card -->
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs mb-4 space-y-2">
+                <div class="flex justify-between text-slate-400">
+                    <span>Langkah Digunakan:</span>
+                    <span id="res-moves" class="font-bold text-white">0</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                    <span>Target Level:</span>
+                    <span id="res-level" class="font-bold text-sky-400">Level 1</span>
+                </div>
+                <div class="flex justify-between text-slate-400 items-center">
+                    <span>Evaluasi Misi:</span>
+                    <span id="res-stars" class="text-amber-400 text-sm">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                    </span>
+                </div>
+            </div>
 
-    requestAnimationFrame(stepAnimation);
-  }
+            <button id="btn-next-level" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs font-space transition shadow-lg">
+                Lanjut Level Berikutnya
+            </button>
+        </div>
+    </div>
 
-  function checkGameStatus() {
-    // 1. Out of Bounds Check
-    if (rocket.x < 0 || rocket.x > GRID_SIZE || rocket.y < 0 || rocket.y > GRID_SIZE) {
-      showModal(false, "Roket keluar dari batas area permainan!");
-      return;
-    }
+    <script>
+        // Web Audio Synthesizer Class
+        class AudioSynth {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            toggleMute() {
+                this.muted = !this.muted;
+                return this.muted;
+            }
+            playMove() {
+                if (this.muted || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(440, this.ctx.currentTime + 0.18);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.18);
+            }
+            playWin() {
+                if (this.muted || !this.ctx) return;
+                const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.08 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + idx * 0.08);
+                    osc.stop(this.ctx.currentTime + idx * 0.08 + 0.3);
+                });
+            }
+            playCrash() {
+                if (this.muted || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            }
+        }
 
-    // 2. Win Check
-    if (rocket.x === moon.x && rocket.y === moon.y) {
-      showModal(true, "Luar biasa! Roket mendarat tepat di Bulan!");
-      return;
-    }
+        const audio = new AudioSynth();
 
-    // 3. Max Steps Reached Check
-    if (movesCount >= maxSteps) {
-      showModal(false, "Kehabisan langkah! Roket gagal mencapai Bulan.");
-      return;
-    }
+        // Global Game State
+        const state = {
+            level: 1,
+            moves: 0,
+            maxMoves: 10,
+            gridSize: { x: 8, y: 12 },
+            rocketPos: { x: 0, y: 0 },
+            moonPos: { x: 5, y: 9 },
+            asteroids: [],
+            portals: [], // Special wormholes for level 4+
+            pathHistory: [{ x: 0, y: 0 }],
+            options: [],
+            isMoving: false,
+            hoveredOption: null,
+            animRocket: { x: 0, y: 0, angle: 0 },
+            particles: [],
+            stars: []
+        };
 
-    // Next step
-    isAnimating = false;
-    generateOptions();
-    draw();
-  }
+        // Level Preset Configurations
+        const levelConfigs = [
+            { level: 1, title: 'Pemula', grid: { x: 8, y: 12 }, maxMoves: 10, asteroidsCount: 0, portal: false },
+            { level: 2, title: 'Jelajah', grid: { x: 10, y: 14 }, maxMoves: 12, asteroidsCount: 4, portal: false },
+            { level: 3, title: 'Navigasi Sabuk', grid: { x: 12, y: 15 }, maxMoves: 12, asteroidsCount: 7, portal: false },
+            { level: 4, title: 'Portal Kuantum', grid: { x: 14, y: 16 }, maxMoves: 14, asteroidsCount: 8, portal: true },
+            { level: 5, title: 'Kapten Utama', grid: { x: 15, y: 18 }, maxMoves: 15, asteroidsCount: 12, portal: true }
+        ];
 
-  function showModal(isWin, message) {
-    const modal = document.getElementById('gameModal');
-    const title = document.getElementById('modal-title');
-    const msg = document.getElementById('modal-msg');
+        // Canvas Setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-    if (isWin) {
-      title.innerText = "🎉 MENANG!";
-      title.style.color = "#4ade80";
-      msg.innerText = message + ` Naik ke Level ${level + 1}!`;
-      level++;
-    } else {
-      title.innerText = "💥 GAGAL!";
-      title.style.color = "#f87171";
-      let prevLvl = level;
-      level = Math.max(1, level - 1);
-      msg.innerText = message + (prevLvl > 1 ? ` Turun ke Level ${level}.` : "");
-    }
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            render();
+        }
 
-    modal.style.display = "flex";
-  }
+        function initStars() {
+            state.stars = [];
+            for (let i = 0; i < 70; i++) {
+                state.stars.push({
+                    x: Math.random(),
+                    y: Math.random(),
+                    size: Math.random() * 1.8 + 0.4,
+                    alpha: Math.random()
+                });
+            }
+        }
 
-  function nextAction() {
-    document.getElementById('gameModal').style.display = "none";
-    initLevel();
-  }
+        function loadLevel(lvlNum) {
+            const configIndex = Math.min(lvlNum - 1, levelConfigs.length - 1);
+            const cfg = levelConfigs[configIndex];
 
-  /* Drawing Logic */
-  function draw() {
-    const w = canvas.width;
-    const h = canvas.height;
-    const padding = 28;
+            state.level = lvlNum;
+            state.moves = 0;
+            state.maxMoves = cfg.maxMoves;
+            state.gridSize = { ...cfg.grid };
+            state.particles = [];
+            
+            document.getElementById('level-badge').innerText = cfg.title;
 
-    const netW = w - padding * 2;
-    const netH = h - padding * 2;
-    const stepX = netW / GRID_SIZE;
-    const stepY = netH / GRID_SIZE;
+            // Generate rocket and moon with guaranteed distance
+            let rx, ry, mx, my, dist;
+            do {
+                rx = Math.floor(Math.random() * (cfg.grid.x - 2));
+                ry = Math.floor(Math.random() * (cfg.grid.y - 2));
+                mx = Math.floor(Math.random() * (cfg.grid.x - 2)) + 2;
+                my = Math.floor(Math.random() * (cfg.grid.y - 2)) + 2;
+                dist = Math.abs(mx - rx) + Math.abs(my - ry);
+            } while (dist < Math.min(cfg.grid.x, cfg.grid.y) * 0.65);
 
-    // Helper: Coordinate conversion (Origin 0,0 at bottom-left)
-    function toCanvasX(gridX) { return padding + gridX * stepX; }
-    function toCanvasY(gridY) { return h - padding - gridY * stepY; }
+            state.rocketPos = { x: rx, y: ry };
+            state.moonPos = { x: mx, y: my };
+            state.animRocket = { x: rx, y: ry, angle: 0 };
+            state.pathHistory = [{ x: rx, y: ry }];
+            state.isMoving = false;
+            state.hoveredOption = null;
 
-    // Clear Background
-    ctx.fillStyle = "#0f172a";
-    ctx.fillRect(0, 0, w, h);
+            // Generate Asteroids avoiding start and end
+            state.asteroids = [];
+            let attempts = 0;
+            while (state.asteroids.length < cfg.asteroidsCount && attempts < 150) {
+                attempts++;
+                const ax = Math.floor(Math.random() * (cfg.grid.x + 1));
+                const ay = Math.floor(Math.random() * (cfg.grid.y + 1));
 
-    // Draw Grid Lines & Numbers
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "#1e293b";
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+                if ((ax === rx && ay === ry) || (ax === mx && ay === my)) continue;
+                if (state.asteroids.some(a => a.x === ax && a.y === ay)) continue;
 
-    for (let i = 0; i <= GRID_SIZE; i++) {
-      let x = toCanvasX(i);
-      let y = toCanvasY(i);
+                state.asteroids.push({ x: ax, y: ay });
+            }
 
-      // Grid line X
-      ctx.beginPath();
-      ctx.strokeStyle = "#334155";
-      ctx.moveTo(x, padding);
-      ctx.lineTo(x, h - padding);
-      ctx.stroke();
+            generateTranslationOptions();
+            updateHUD();
+            showToast(`Level ${lvlNum}: Target Bulan (${state.moonPos.x}, ${state.moonPos.y})`);
+            render();
+        }
 
-      // Grid line Y
-      ctx.beginPath();
-      ctx.moveTo(padding, y);
-      ctx.lineTo(w - padding, y);
-      ctx.stroke();
+        function generateTranslationOptions() {
+            const current = state.rocketPos;
+            const moon = state.moonPos;
+            const dx = moon.x - current.x;
+            const dy = moon.y - current.y;
 
-      // Axis Numbers
-      ctx.fillText(i, x, h - 12);
-      ctx.fillText(i, 12, y);
-    }
+            const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-    // Draw Red Boundary Box
-    ctx.strokeStyle = "#ef4444";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(padding, padding, netW, netH);
+            let choices = [];
 
-    // Draw Moon
-    const moonCX = toCanvasX(moon.x);
-    const moonCY = toCanvasY(moon.y);
-    ctx.fillStyle = "#facc15";
-    ctx.shadowColor = "#facc15";
-    ctx.shadowBlur = 12;
-    ctx.beginPath();
-    ctx.arc(moonCX, moonCY, Math.min(stepX, stepY) * 0.35, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
+            // Smart/Winning option dynamic logic
+            if (state.moves >= 4 || (Math.abs(dx) <= 3 && Math.abs(dy) <= 3)) {
+                choices.push({ x: dx, y: dy });
+            } else {
+                let stepX = dx !== 0 ? Math.sign(dx) * randInt(1, Math.min(3, Math.abs(dx))) : randInt(-1, 1);
+                let stepY = dy !== 0 ? Math.sign(dy) * randInt(1, Math.min(3, Math.abs(dy))) : randInt(-1, 1);
+                choices.push({ x: stepX, y: stepY });
+            }
 
-    // Moon craters
-    ctx.fillStyle = "#eab308";
-    ctx.beginPath();
-    ctx.arc(moonCX - 3, moonCY - 3, 3, 0, Math.PI * 2);
-    ctx.arc(moonCX + 4, moonCY + 2, 2, 0, Math.PI * 2);
-    ctx.fill();
+            // Alternative options
+            choices.push({ x: randInt(-2, 3), y: randInt(-1, 4) });
+            choices.push({ x: randInt(-3, 3), y: randInt(-2, 3) });
 
-    // Draw Rocket
-    const rocketCX = toCanvasX(rocket.x);
-    const rocketCY = toCanvasY(rocket.y);
-    const rSize = Math.min(stepX, stepY) * 0.3;
+            // Ensure non-zero and unique vectors
+            choices = choices.map(c => {
+                if (c.x === 0 && c.y === 0) c.y = 1;
+                return c;
+            });
 
-    ctx.save();
-    ctx.translate(rocketCX, rocketCY);
+            for (let i = 1; i < choices.length; i++) {
+                if (choices[i].x === choices[0].x && choices[i].y === choices[0].y) {
+                    choices[i].x += (i === 1 ? 1 : -1);
+                }
+            }
 
-    // Body
-    ctx.fillStyle = "#38bdf8";
-    ctx.shadowColor = "#38bdf8";
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    ctx.arc(0, 0, rSize, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
+            state.options = choices.sort(() => Math.random() - 0.5);
+            renderOptionButtons();
+        }
 
-    // Fins
-    ctx.fillStyle = "#f43f5e";
-    ctx.fillRect(-rSize * 0.4, -rSize * 0.4, rSize * 0.8, rSize * 0.8);
+        function renderOptionButtons() {
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
 
-    ctx.restore();
-  }
+            state.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = `btn-option bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700/80 rounded-xl p-2.5 flex flex-col items-center justify-center text-center shadow-md active:border-sky-500 transition group`;
 
-  // Initial Start
-  initLevel();
-</script>
+                const formatNum = (n) => n > 0 ? `+${n}` : `${n}`;
 
+                btn.innerHTML = `
+                    <span class="text-[10px] text-slate-400 group-hover:text-sky-300 mb-0.5 font-space">Opsi ${index + 1}</span>
+                    <span class="text-sm md:text-base font-bold font-space text-sky-400 group-hover:scale-105 transition-transform">
+                        [ ${formatNum(opt.x)} , ${formatNum(opt.y)} ]
+                    </span>
+                `;
+
+                btn.addEventListener('mouseenter', () => {
+                    if (!state.isMoving) {
+                        state.hoveredOption = opt;
+                        updateFormulaPreview(opt);
+                        render();
+                    }
+                });
+                btn.addEventListener('mouseleave', () => {
+                    if (!state.isMoving) {
+                        state.hoveredOption = null;
+                        resetFormulaPreview();
+                        render();
+                    }
+                });
+
+                btn.addEventListener('click', () => {
+                    audio.init();
+                    if (!state.isMoving) {
+                        applyTranslation(opt);
+                    }
+                });
+
+                container.appendChild(btn);
+            });
+        }
+
+        function updateFormulaPreview(opt) {
+            const elem = document.getElementById('formula-preview');
+            const formatNum = (n) => n >= 0 ? `+${n}` : `${n}`;
+            elem.innerText = `P'(${state.rocketPos.x}${formatNum(opt.x)}, ${state.rocketPos.y}${formatNum(opt.y)})`;
+        }
+
+        function resetFormulaPreview() {
+            document.getElementById('formula-preview').innerText = "P'(x+a, y+b)";
+        }
+
+        function applyTranslation(vector) {
+            state.isMoving = true;
+            state.hoveredOption = null;
+            state.moves++;
+            audio.playMove();
+
+            const startX = state.rocketPos.x;
+            const startY = state.rocketPos.y;
+            const midX = startX + vector.x;
+            const targetX = startX + vector.x;
+            const targetY = startY + vector.y;
+
+            const duration = 650;
+            const startTime = performance.now();
+
+            function animateStep(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                if (progress <= 0.5 || vector.y === 0) {
+                    const p1 = Math.min(progress * 2, 1);
+                    const easeP1 = 1 - Math.pow(1 - p1, 3);
+                    state.animRocket.x = startX + vector.x * easeP1;
+                    state.animRocket.y = startY;
+                    state.animRocket.angle = vector.x >= 0 ? 0 : Math.PI;
+                } else {
+                    const p2 = (progress - 0.5) * 2;
+                    const easeP2 = 1 - Math.pow(1 - p2, 3);
+                    state.animRocket.x = targetX;
+                    state.animRocket.y = startY + vector.y * easeP2;
+                    state.animRocket.angle = vector.y >= 0 ? Math.PI / 2 : -Math.PI / 2;
+                }
+
+                // Add thruster particle effects
+                if (Math.random() < 0.6) {
+                    createThrusterParticle(state.animRocket.x, state.animRocket.y);
+                }
+
+                render();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateStep);
+                } else {
+                    if (vector.x !== 0 && vector.y !== 0) {
+                        state.pathHistory.push({ x: midX, y: startY });
+                    }
+                    state.rocketPos = { x: targetX, y: targetY };
+                    state.pathHistory.push({ ...state.rocketPos });
+                    state.isMoving = false;
+
+                    updateHUD();
+                    checkGameRules(startX, startY, midX, targetY);
+                }
+            }
+
+            requestAnimationFrame(animateStep);
+        }
+
+        function checkGameRules(startX, startY, midX, targetY) {
+            const midOutOfBounds = midX < 0 || midX > state.gridSize.x || startY < 0 || startY > state.gridSize.y;
+            const targetOutOfBounds = state.rocketPos.x < 0 || state.rocketPos.x > state.gridSize.x ||
+                state.rocketPos.y < 0 || state.rocketPos.y > state.gridSize.y;
+
+            if (midOutOfBounds || targetOutOfBounds) {
+                audio.playCrash();
+                createExplosion(state.rocketPos.x, state.rocketPos.y);
+                showResultModal(false, "Misi Gagal! Roket melewati batas koordinat ruang angkasa.");
+                return;
+            }
+
+            const hitMidAsteroid = state.asteroids.some(a => a.x === midX && a.y === startY);
+            const hitTargetAsteroid = state.asteroids.some(a => a.x === state.rocketPos.x && a.y === state.rocketPos.y);
+
+            if (hitMidAsteroid || hitTargetAsteroid) {
+                audio.playCrash();
+                createExplosion(state.rocketPos.x, state.rocketPos.y);
+                showResultModal(false, "Misi Gagal! Roket menabrak sabuk asteroid.");
+                return;
+            }
+
+            // Target reached
+            if (state.rocketPos.x === state.moonPos.x && state.rocketPos.y === state.moonPos.y) {
+                audio.playWin();
+                createConfetti(state.moonPos.x, state.moonPos.y);
+                showResultModal(true, "Selamat! Roket berhasil mendarat tepat di koordinat Bulan.");
+                return;
+            }
+
+            // Out of moves
+            if (state.moves >= state.maxMoves) {
+                audio.playCrash();
+                showResultModal(false, "Misi Gagal! Roket kehabisan bahan bakar.");
+                return;
+            }
+
+            generateTranslationOptions();
+        }
+
+        // Particle System Effects
+        function createThrusterParticle(gx, gy) {
+            state.particles.push({
+                gx: gx,
+                gy: gy,
+                vx: (Math.random() - 0.5) * 0.05,
+                vy: (Math.random() - 0.5) * 0.05,
+                size: Math.random() * 3 + 2,
+                color: Math.random() > 0.5 ? '#f97316' : '#ef4444',
+                life: 1.0
+            });
+        }
+
+        function createExplosion(gx, gy) {
+            for (let i = 0; i < 25; i++) {
+                state.particles.push({
+                    gx: gx,
+                    gy: gy,
+                    vx: (Math.random() - 0.5) * 0.2,
+                    vy: (Math.random() - 0.5) * 0.2,
+                    size: Math.random() * 5 + 3,
+                    color: '#ef4444',
+                    life: 1.0
+                });
+            }
+        }
+
+        function createConfetti(gx, gy) {
+            const colors = ['#38bdf8', '#fef08a', '#34d399', '#f472b6'];
+            for (let i = 0; i < 40; i++) {
+                state.particles.push({
+                    gx: gx,
+                    gy: gy,
+                    vx: (Math.random() - 0.5) * 0.25,
+                    vy: (Math.random() - 0.5) * 0.25,
+                    size: Math.random() * 4 + 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 1.2
+                });
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('level-display').innerText = state.level;
+            document.getElementById('moves-count').innerText = `${state.moves} / ${state.maxMoves}`;
+            document.getElementById('pos-rocket').innerText = `(${state.rocketPos.x}, ${state.rocketPos.y})`;
+            document.getElementById('pos-moon').innerText = `(${state.moonPos.x}, ${state.moonPos.y})`;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('game-toast');
+            document.getElementById('toast-text').innerText = msg;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 2800);
+        }
+
+        function render() {
+            const w = canvas.parentElement.getBoundingClientRect().width;
+            const h = canvas.parentElement.getBoundingClientRect().height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const padding = 32;
+            const gridW = w - padding * 2;
+            const gridH = h - padding * 2;
+
+            const maxGridX = state.gridSize.x;
+            const maxGridY = state.gridSize.y;
+
+            const stepX = gridW / maxGridX;
+            const stepY = gridH / maxGridY;
+
+            const toCanvasCoords = (gx, gy) => {
+                return {
+                    x: padding + gx * stepX,
+                    y: h - padding - gy * stepY
+                };
+            };
+
+            // 1. Render Stars
+            ctx.fillStyle = '#ffffff';
+            state.stars.forEach(star => {
+                ctx.globalAlpha = star.alpha * 0.7;
+                ctx.fillRect(star.x * w, star.y * h, star.size, star.size);
+            });
+            ctx.globalAlpha = 1.0;
+
+            // 2. Render Coordinate Grid Lines & Axis Numbers
+            ctx.strokeStyle = 'rgba(51, 65, 85, 0.45)';
+            ctx.lineWidth = 1;
+
+            for (let x = 0; x <= maxGridX; x++) {
+                const pt1 = toCanvasCoords(x, 0);
+                const pt2 = toCanvasCoords(x, maxGridY);
+                ctx.beginPath();
+                ctx.moveTo(pt1.x, pt1.y);
+                ctx.lineTo(pt2.x, pt2.y);
+                ctx.stroke();
+
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
+                ctx.font = '10px Space Grotesk';
+                ctx.textAlign = 'center';
+                ctx.fillText(x, pt1.x, pt1.y + 14);
+            }
+
+            for (let y = 0; y <= maxGridY; y++) {
+                const pt1 = toCanvasCoords(0, y);
+                const pt2 = toCanvasCoords(maxGridX, y);
+                ctx.beginPath();
+                ctx.moveTo(pt1.x, pt1.y);
+                ctx.lineTo(pt2.x, pt2.y);
+                ctx.stroke();
+
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
+                ctx.font = '10px Space Grotesk';
+                ctx.textAlign = 'right';
+                ctx.fillText(y, pt1.x - 6, pt1.y + 3);
+            }
+
+            // Outer Bounds Box
+            const bBottomLeft = toCanvasCoords(0, 0);
+            const bTopRight = toCanvasCoords(maxGridX, maxGridY);
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.7)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(bBottomLeft.x, bTopRight.y, bTopRight.x - bBottomLeft.x, bBottomLeft.y - bTopRight.y);
+
+            // 3. Trajectory Path History
+            if (state.pathHistory.length > 1) {
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                state.pathHistory.forEach((pt, idx) => {
+                    const cpt = toCanvasCoords(pt.x, pt.y);
+                    if (idx === 0) ctx.moveTo(cpt.x, cpt.y);
+                    else ctx.lineTo(cpt.x, cpt.y);
+                });
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // 4. Hover Trajectory Preview
+            if (state.hoveredOption && !state.isMoving) {
+                const current = toCanvasCoords(state.rocketPos.x, state.rocketPos.y);
+                const midG = { x: state.rocketPos.x + state.hoveredOption.x, y: state.rocketPos.y };
+                const targetG = { x: state.rocketPos.x + state.hoveredOption.x, y: state.rocketPos.y + state.hoveredOption.y };
+                const mid = toCanvasCoords(midG.x, midG.y);
+                const target = toCanvasCoords(targetG.x, targetG.y);
+
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(current.x, current.y);
+                ctx.lineTo(mid.x, mid.y);
+                ctx.lineTo(target.x, target.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Target Preview Dot
+                ctx.fillStyle = 'rgba(245, 158, 11, 0.3)';
+                ctx.strokeStyle = '#f59e0b';
+                ctx.beginPath();
+                ctx.arc(target.x, target.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // 5. Start Earth Base
+            const earthPt = toCanvasCoords(state.pathHistory[0].x, state.pathHistory[0].y);
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.arc(earthPt.x, earthPt.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 6. Moon Target
+            const moonPt = toCanvasCoords(state.moonPos.x, state.moonPos.y);
+            const moonGlow = ctx.createRadialGradient(moonPt.x, moonPt.y, 4, moonPt.x, moonPt.y, 18);
+            moonGlow.addColorStop(0, 'rgba(254, 240, 138, 0.6)');
+            moonGlow.addColorStop(1, 'rgba(254, 240, 138, 0)');
+            ctx.fillStyle = moonGlow;
+            ctx.beginPath();
+            ctx.arc(moonPt.x, moonPt.y, 18, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(moonPt.x, moonPt.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#eab308';
+            ctx.beginPath();
+            ctx.arc(moonPt.x - 3, moonPt.y - 3, 2, 0, Math.PI * 2);
+            ctx.arc(moonPt.x + 3, moonPt.y + 2, 1.8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 7. Asteroids
+            state.asteroids.forEach(ast => {
+                const apt = toCanvasCoords(ast.x, ast.y);
+                ctx.fillStyle = '#64748b';
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(apt.x, apt.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(apt.x - 3, apt.y - 3);
+                ctx.lineTo(apt.x + 3, apt.y + 3);
+                ctx.moveTo(apt.x + 3, apt.y - 3);
+                ctx.lineTo(apt.x - 3, apt.y + 3);
+                ctx.stroke();
+            });
+
+            // 8. Particles
+            state.particles.forEach((p, idx) => {
+                p.life -= 0.03;
+                p.gx += p.vx;
+                p.gy += p.vy;
+                if (p.life <= 0) {
+                    state.particles.splice(idx, 1);
+                    return;
+                }
+                const pt = toCanvasCoords(p.gx, p.gy);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            });
+
+            // 9. Rocket Graphic
+            const rPos = state.isMoving ? state.animRocket : state.rocketPos;
+            const rPt = toCanvasCoords(rPos.x, rPos.y);
+
+            ctx.save();
+            ctx.translate(rPt.x, rPt.y);
+
+            const renderAngle = state.isMoving ? -state.animRocket.angle + Math.PI / 2 : 0;
+            ctx.rotate(renderAngle);
+
+            if (state.isMoving) {
+                ctx.fillStyle = Math.random() > 0.5 ? '#f97316' : '#ef4444';
+                ctx.beginPath();
+                ctx.moveTo(-4, 8);
+                ctx.lineTo(0, 16 + Math.random() * 4);
+                ctx.lineTo(4, 8);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Rocket Body
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.moveTo(0, -12);
+            ctx.lineTo(6, 6);
+            ctx.lineTo(-6, 6);
+            ctx.closePath();
+            ctx.fill();
+
+            // Rocket Nose
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.moveTo(0, -12);
+            ctx.lineTo(3, -4);
+            ctx.lineTo(-3, -4);
+            ctx.closePath();
+            ctx.fill();
+
+            // Rocket Wings
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(-8, 3, 3, 5);
+            ctx.fillRect(5, 3, 3, 5);
+
+            ctx.restore();
+        }
+
+        function showResultModal(isWin, desc) {
+            const modal = document.getElementById('modal-result');
+            const iconBox = document.getElementById('result-icon-box');
+            const title = document.getElementById('result-title');
+            const resultDesc = document.getElementById('result-desc');
+            const btnNext = document.getElementById('btn-next-level');
+
+            document.getElementById('res-moves').innerText = `${state.moves} langkah`;
+            document.getElementById('res-level').innerText = `Level ${state.level}`;
+
+            if (isWin) {
+                iconBox.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+                iconBox.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+                title.innerText = "Misi Berhasil!";
+                title.className = "text-xl font-bold font-space mb-1 text-emerald-400";
+                resultDesc.innerText = desc;
+                
+                // Calculate Star Rating
+                const starsElem = document.getElementById('res-stars');
+                if (state.moves <= 5) {
+                    starsElem.innerHTML = '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>';
+                } else if (state.moves <= 8) {
+                    starsElem.innerHTML = '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>';
+                } else {
+                    starsElem.innerHTML = '<i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>';
+                }
+
+                btnNext.innerText = "Lanjut Level Berikutnya";
+                btnNext.onclick = () => {
+                    modal.classList.add('hidden');
+                    loadLevel(state.level + 1);
+                };
+            } else {
+                const prevLevel = Math.max(1, state.level - 1);
+                iconBox.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3 bg-rose-500/20 text-rose-400 border border-rose-500/40';
+                iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                title.innerText = "Misi Gagal!";
+                title.className = "text-xl font-bold font-space mb-1 text-rose-400";
+                resultDesc.innerText = state.level > 1 ? `${desc} Level turun ke Level ${prevLevel}.` : desc;
+                
+                document.getElementById('res-stars').innerHTML = '<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>';
+
+                btnNext.innerText = state.level > 1 ? `Coba Lagi (Level ${prevLevel})` : "Coba Lagi";
+                btnNext.onclick = () => {
+                    modal.classList.add('hidden');
+                    loadLevel(prevLevel);
+                };
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        // Button Listeners
+        document.getElementById('btn-audio').addEventListener('click', () => {
+            const isMuted = audio.toggleMute();
+            const icon = document.getElementById('audio-icon');
+            if (isMuted) {
+                icon.className = 'fa-solid fa-volume-xmark text-xs text-rose-400';
+            } else {
+                icon.className = 'fa-solid fa-volume-high text-xs text-emerald-400';
+            }
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            loadLevel(state.level);
+        });
+
+        document.getElementById('btn-help').addEventListener('click', () => {
+            document.getElementById('modal-guide').classList.remove('hidden');
+        });
+
+        document.getElementById('btn-close-guide').addEventListener('click', () => {
+            document.getElementById('modal-guide').classList.add('hidden');
+        });
+
+        document.getElementById('btn-close-guide-x').addEventListener('click', () => {
+            document.getElementById('modal-guide').classList.add('hidden');
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        window.onload = () => {
+            initStars();
+            resizeCanvas();
+            loadLevel(1);
+        };
+    </script>
 </body>
 </html>
